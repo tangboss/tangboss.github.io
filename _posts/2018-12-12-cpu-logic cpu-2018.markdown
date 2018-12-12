@@ -1,0 +1,71 @@
+---
+layout:     post
+title:      "Linux 物理cpu、逻辑cpu、cpu核数、vCPU的关系"
+subtitle:   " \"Hello World, Hello CPU\""
+date:       2018-12-12 19:12:00
+author:     "tangboss"
+header-img: "img/post-bg-2015.jpg"
+tags:
+    - CPU
+---
+
+
+## 物理CPU
+
+物理CPU就是计算机上实际配置的CPU个数,主板上实际插入的cpu数量，可以数不重复的 physical id 有几个（physical id）其中的physical id就是每个物理CPU的ID，在linux下可以通过如下指令来查看你的物理CPU个数：
+> grep 'physical id' /proc/cpuinfo | sort -u | wc -l
+
+---
+
+## CPU核数
+
+核数就是指CPU上集中的处理数据的cpu核心个数。通常每个CPU下的核数都是固定的，比如你的计算机有两个物理CPU，每个CPU是双核，那么计算机就是四核的。linux的cpu核心总数也可以在/proc/cpuinfo里面通过指令cat /proc/cpuinfo查看的到，其中的core id指的是每个物理CPU下的cpu核的id。可以通过如下命令查看：
+> cat /proc/cpuinfo | grep 'cpu cores'|wc -l
+
+---
+
+## 逻辑CPU
+
+操作系统可以使用逻辑CPU来模拟出真实CPU的效果。当计算机没有开启超线程时，逻辑CPU的个数就是计算机的核数。而当超线程开启后，逻辑CPU的个数是核数的两倍。实际上逻辑CPU的数量就是平时称呼的几核几线程中的线程数量，在linux的cpuinfo中逻辑CPU数就是processor的数量。可以使用指令如下命令来查看逻辑CPU数。
+
+> cat /proc/cpuinfo | grep 'processor' | wc -l
+
+一般情况下，逻辑cpu=物理CPU个数×每颗核数，如果不相等的话，则表示服务器的CPU支持超线程技术（HT：简单来说，它可使处理器中的1 颗内核如2 颗内核那样在操作系统中发挥作用。这样一来，操作系统可使用的执行资源扩大了一倍，大幅提高了系统的整体性能，此时逻辑cpu=物理CPU个数×每颗核数x2）
+
+---
+
+##vCPU
+对虚拟机来说，不直接感知物理CPU，虚拟机的计算单元通过vCPU对象来 呈现。虚拟机只看到VMM呈现给它的vCPU。在VMM中，每个vCPU对应一个VMCS（Virtual-Machine Control Structure）结构，当VCPU被从物理CPU上切换下来的时候，其运行上下文会被保存在其对应的VMCS结构中；当VCPU被切换到PCPU上运 行时，其运行上下文会从对应的VMCS结构中导入到物理CPU上。通过这种方式，实现各vCPU之间的独立运行。 
+
+> vCPU 个数 = 物理CPU个数 * 物理CPU核数 * 单核线程数
+
+虚拟化场景，10台服务器，每台服务器2路8核2.8GHz的CPU，提供的vCPU个数 = 10 * 2 * 8 * 2 = 320个vCPU，可承载2U2G的虚拟机160个。 
+
+##cpuinfo
+
+    processor       : 10
+	vendor_id       : GenuineIntel
+	cpu family      : 6
+	model           : 60
+	model name      : Intel Core Processor (Haswell, no TSX)
+	stepping        : 1
+	microcode       : 0x1
+	cpu MHz         : 2297.338
+	cache size      : 16384 KB
+	physical id     : 0
+	siblings        : 32
+	core id         : 10
+	cpu cores       : 32
+	apicid          : 10
+	initial apicid  : 10
+	fpu             : yes
+	fpu_exception   : yes
+	cpuid level     : 13
+	wp              : yes
+	flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ss ht syscall nx pdpe1gb rdtscp lm constant_tsc rep_good nopl xtopology eagerfpu pni pclmulqdq ssse3 fma cx16 pcid sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm abm invpcid_single fsgsbase tsc_adjust bmi1 avx2 smep bmi2 erms invpcid xsaveopt arat
+	bogomips        : 4594.67
+	clflush size    : 64
+	cache_alignment : 64
+	address sizes   : 40 bits physical, 48 bits virtual
+	power management:
+
