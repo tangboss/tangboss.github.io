@@ -4,7 +4,6 @@ title:      "Linux 物理cpu、逻辑cpu、cpu核数、vCPU的关系"
 subtitle:   " \"Hello World, Hello CPU\""
 date:       2018-12-12 19:12:00
 author:     "tangboss"
-header-img: "img/post-bg-2015.jpg"
 tags:
     - CPU
 ---
@@ -39,7 +38,7 @@ tags:
 ## vCPU
 对虚拟机来说，不直接感知物理CPU，虚拟机的计算单元通过vCPU对象来 呈现。虚拟机只看到VMM呈现给它的vCPU。在VMM中，每个vCPU对应一个VMCS（Virtual-Machine Control Structure）结构，当VCPU被从物理CPU上切换下来的时候，其运行上下文会被保存在其对应的VMCS结构中；当VCPU被切换到PCPU上运 行时，其运行上下文会从对应的VMCS结构中导入到物理CPU上。通过这种方式，实现各vCPU之间的独立运行。 
 
-> vCPU 个数 = 物理CPU个数 * 物理CPU核数 * 单核线程数
+    vCPU 个数 = 物理CPU个数 * 物理CPU核数 * 单核线程数
 
 虚拟化场景，10台服务器，每台服务器2路8核2.8GHz的CPU，提供的vCPU个数 = 10 * 2 * 8 * 2 = 320个vCPU，可承载2U2G的虚拟机160个。 
 
