@@ -129,3 +129,37 @@ logback.xml放置在war包同目录下，此时可修改级别，可以将INFO�
 	17:13:06,295 |-INFO in ch.qos.logback.classic.joran.action.ConfigurationAction - Will scan for changes in [file:/root/code/./logback.xml]
 
 ---
+
+## logback+restful
+
+### 机制
+
+logback除了提供通过配置文件修改，还可提供setLevel/getLevel函数进行内存打印级别的修改。
+
+### 实现
+
+
+	put("/log"){
+	  val dynLogger = LoggerFactory.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME)
+	    .asInstanceOf[ch.qos.logback.classic.Logger]
+	  if(request.getParameter("level") != null){
+	    val level = request.getParameter("level").toUpperCase match{
+	      case "DEBUG" => Level.DEBUG
+	      case "INFO" => Level.INFO
+	      case "ERROR" => Level.ERROR
+	      case _ => Level.INFO
+	    }
+	    dynLogger.setLevel(level)
+	  }
+	  Ok(JsonMapper.to(dynLogger.getLevel))
+	}
+
+### 设置
+
+接口 PUT http://ip:port/api/v1.0/log?level=info/debug/error
+
+返回值：为当前打印级别  {"levelInt":10000,"levelStr":"DEBUG"}
+
+1）若要查询当前打印级别可直接不带level：PUT http://ip:port/api/v1.0/log
+
+2）若传输level字符不匹配，默认使用info级别
